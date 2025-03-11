@@ -13,3 +13,4 @@ Run the commands below inside the `vint_release/` (topmost) directory:
     git clone git@github.com:real-stanford/diffusion_policy.git
     pip install -e diffusion_policy/
     ```
+# More details are coming soon.
