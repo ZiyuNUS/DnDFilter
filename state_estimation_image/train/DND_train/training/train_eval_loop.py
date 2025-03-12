@@ -2,7 +2,6 @@ import wandb
 import os
 
 from typing import Dict
-from DND_train.training.train_step_1 import train_nomad, evaluate_nomad
 
 import torch
 import torch.nn as nn
@@ -13,6 +12,11 @@ from torchvision import transforms
 from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
 from diffusers.training_utils import EMAModel
 
+import importlib
+
+def dynamic_import(train_module_path):
+    module = importlib.import_module(train_module_path)
+    return module.train_nomad, module.evaluate_nomad
 
 def train_eval_loop(
         train_model: bool,
@@ -26,6 +30,7 @@ def train_eval_loop(
         epochs: int,
         device: torch.device,
         project_folder: str,
+        training_setting: str,
         print_log_freq: int = 100,
         wandb_log_freq: int = 10,
         current_epoch: int = 0,
@@ -34,6 +39,9 @@ def train_eval_loop(
 ):
     latest_path = os.path.join(project_folder, f"latest.pth")
     ema_model = EMAModel(model=model, power=0.75)
+
+    train_module_path = f"DND_train.training.train_{training_setting}"  # 直接用字符串
+    train_nomad, evaluate_nomad = dynamic_import(train_module_path)
 
     for epoch in range(current_epoch, current_epoch + epochs):
         if train_model:
