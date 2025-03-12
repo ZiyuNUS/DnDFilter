@@ -5,7 +5,6 @@ import yaml
 import time
 
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim import AdamW
 from torchvision import transforms
@@ -14,77 +13,61 @@ from warmup_scheduler import GradualWarmupScheduler
 
 from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
 
-from dndtrain.models.nomad.nomad import NoMaD
-from vint_train.models.nomad.nomad_vint import NoMaD_ViNT, replace_bn_with_gn
+from DND_train.models.dnd.dnd import DnD
+from DND_train.models.dnd.vint import ViNT, replace_bn_with_gn
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
-from vint_train.data.vint_dataset import ViNT_Dataset
-from vint_train.training.train_eval_loop import train_eval_loop_nomad, load_model
+from DND_train.data.dnd_dataset import DnD_Dataset
+from DND_train.training.train_eval_loop import train_eval_loop, load_model
 
 def main(config):
+
     if torch.cuda.is_available():
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        if "gpu_ids" not in config:
-            config["gpu_ids"] = [0]
-        elif type(config["gpu_ids"]) == int:
-            config["gpu_ids"] = [config["gpu_ids"]]
-        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(
-            [str(x) for x in config["gpu_ids"]]
-        )
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(x) for x in config["gpu_ids"]])
         print("Using cuda devices:", os.environ["CUDA_VISIBLE_DEVICES"])
     else:
         print("Using cpu")
     first_gpu_id = config["gpu_ids"][0]
-    device = torch.device(
-        f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device(f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu")
 
     if "seed" in config:
         np.random.seed(config["seed"])
         torch.manual_seed(config["seed"])
         cudnn.deterministic = True
-    # good if input sizes don't vary
+
     cudnn.benchmark = True
 
-    # 图片预处理（可以考虑删除）
     transform = ([
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     transform = transforms.Compose(transform)
 
-    # 加载训练集和测试集
     train_dataset = []
     test_dataloaders = {}
 
-    for dataset_name in config["datasets"]:
-        data_config = config["datasets"][dataset_name]
-        if "end_slack" not in data_config:
-            data_config["end_slack"] = 0
-        if "record_spacing" not in data_config:
-            data_config["record_spacing"] = 1
-    # 记载数据集
-        for data_split_type in ["train", "test"]:
-            if data_split_type in data_config:
-                dataset = ViNT_Dataset(
-                    data_folder=data_config[f"{data_split_type}_data_folder"],
-                    data_split_folder=data_config[data_split_type],
-                    dataset_name=dataset_name,
-                    image_size=config["image_size"],
-                    record_spacing=data_config["record_spacing"],
-                    len_traj_pred=config["len_traj_pred"],
-                    context_size=config["context_size"],
-                    context_type=config["context_type"],
-                    end_slack=data_config["end_slack"],
-                    normalize=config["normalize"],
-                )
-                if data_split_type == "train":
-                    train_dataset.append(dataset)
-                else:
-                    dataset_type = f"{dataset_name}_{data_split_type}"
-                    if dataset_type not in test_dataloaders:
-                        test_dataloaders[dataset_type] = {}
-                    test_dataloaders[dataset_type] = dataset
+    data_config = config["datasets"]["RED"]
 
-    # combine all the datasets from different robots
+    for data_split_type in ["train", "test"]:
+        dataset = DnD_Dataset(
+            data_folder=data_config[f"{data_split_type}_data_folder"],
+            data_split_folder=data_config[data_split_type],
+            dataset_name="RED",
+            image_size=config["image_size"],
+            record_spacing=data_config["record_spacing"],
+            len_traj_pred=config["len_traj_pred"],
+            context_size=config["context_size"],
+            context_type=config["context_type"],
+            end_slack=data_config["end_slack"],
+            normalize=config["normalize"],
+        )
+        if data_split_type == "train":
+            train_dataset.append(dataset)
+        else:
+            dataset_type = f"RED_{data_split_type}"
+            if dataset_type not in test_dataloaders:
+                test_dataloaders[dataset_type] = {}
+            test_dataloaders[dataset_type] = dataset
+
     train_dataset = ConcatDataset(train_dataset)
     # set up the training data
     train_loader = DataLoader(
@@ -104,51 +87,37 @@ def main(config):
             num_workers=0,
             drop_last=False,
         )
-    # Create the model(3 nets)
-    if config["model_type"] == "nomad":
-        if config["vision_encoder"] == "nomad_vint":
-            vision_encoder = NoMaD_ViNT(
-                obs_encoding_size=config["encoding_size"],
-                context_size=config["context_size"] + 1,
-                mha_num_attention_heads=config["mha_num_attention_heads"],
-                mha_num_attention_layers=config["mha_num_attention_layers"],
-                mha_ff_dim_factor=config["mha_ff_dim_factor"],
-            )
-            vision_encoder = replace_bn_with_gn(vision_encoder)
-        else:
-            raise ValueError(f"Vision encoder {config['vision_encoder']} not supported")
 
-        noise_pred_net = ConditionalUnet1D(
-            input_dim=2,
-            global_cond_dim=config["encoding_size"],
-            down_dims=config["down_dims"],
-            cond_predict_scale=config["cond_predict_scale"],
+    if config["vision_encoder"] == "vint":
+        vision_encoder = ViNT(
+            obs_encoding_size=config["encoding_size"],
+            context_size=config["context_size"] + 1,
+            mha_num_attention_heads=config["mha_num_attention_heads"],
+            mha_num_attention_layers=config["mha_num_attention_layers"],
+            mha_ff_dim_factor=config["mha_ff_dim_factor"],
         )
-
-        model = NoMaD(
-            vision_encoder=vision_encoder,
-            noise_pred_net=noise_pred_net,
-        )
-        total_params = sum(p.numel() for p in model.parameters())
-        noise_scheduler = DDPMScheduler(
-            num_train_timesteps=config["num_diffusion_iters"],
-            beta_schedule='squaredcos_cap_v2',
-            clip_sample=True,
-            prediction_type='epsilon'
-        )
+        vision_encoder = replace_bn_with_gn(vision_encoder)
     else:
-        raise ValueError(f"Model {config['model']} not supported")
+        raise ValueError(f"Vision encoder {config['vision_encoder']} not supported")
 
-    if config["clipping"]:
-        print("Clipping gradients to", config["max_norm"])
-        for p in model.parameters():
-            if not p.requires_grad:
-                continue
-            p.register_hook(
-                lambda grad: torch.clamp(
-                    grad, -1 * config["max_norm"], config["max_norm"]
-                )
-            )
+    noise_pred_net = ConditionalUnet1D(
+        input_dim=2,
+        global_cond_dim=config["encoding_size"],
+        down_dims=config["down_dims"],
+        cond_predict_scale=config["cond_predict_scale"],
+    )
+
+    model = DnD(
+        vision_encoder=vision_encoder,
+        noise_pred_net=noise_pred_net,
+    )
+
+    noise_scheduler = DDPMScheduler(
+        num_train_timesteps=config["num_diffusion_iters"],
+        beta_schedule='squaredcos_cap_v2',
+        clip_sample=True,
+        prediction_type='epsilon'
+    )
 
     lr = float(config["lr"])
     config["optimizer"] = config["optimizer"].lower()
@@ -182,8 +151,6 @@ def main(config):
         if "epoch" in latest_checkpoint:
             current_epoch = latest_checkpoint["epoch"] + 1
 
-    if len(config["gpu_ids"]) > 1:
-        model = nn.DataParallel(model, device_ids=config["gpu_ids"])
     model = model.to(device)
 
     if "load_run" in config:  # load optimizer and scheduler after data parallel
@@ -192,7 +159,7 @@ def main(config):
         if scheduler is not None and "scheduler" in latest_checkpoint:
             scheduler.load_state_dict(latest_checkpoint["scheduler"].state_dict())
 
-    train_eval_loop_nomad(
+    train_eval_loop(
         train_model=config["train"],
         model=model,
         optimizer=optimizer,
@@ -208,8 +175,8 @@ def main(config):
         wandb_log_freq=config["wandb_log_freq"],
         current_epoch=current_epoch,
         use_wandb=config["use_wandb"],
-        eval_fraction=config["eval_fraction"],
         eval_freq=config["eval_freq"],
+        training_setting=config["training_setting"]
     )
 
     print("FINISHED TRAINING")
@@ -217,7 +184,7 @@ def main(config):
 
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/step_5.yaml"
+    config_route = "config/step10.yaml"
 
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
@@ -226,11 +193,8 @@ if __name__ == "__main__":
     config["project_folder"] = os.path.join(
         "logs", config["project_name"], config["run_name"]
     )
-    os.makedirs(
-        config[
-            "project_folder"
-        ],
-    )
+    os.makedirs(config["project_folder"])
+
     if config["use_wandb"]:
         wandb.login()
         wandb.init(
@@ -242,5 +206,4 @@ if __name__ == "__main__":
         if wandb.run:
             wandb.config.update(config)
 
-    print(config)
     main(config)
