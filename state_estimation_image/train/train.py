@@ -91,7 +91,7 @@ def main(config):
     if config["vision_encoder"] == "vint":
         vision_encoder = ViNT(
             obs_encoding_size=config["encoding_size"],
-            context_size=config["context_size"] + 1,
+            context_size=config["visual_size"],
             mha_num_attention_heads=config["mha_num_attention_heads"],
             mha_num_attention_layers=config["mha_num_attention_layers"],
             mha_ff_dim_factor=config["mha_ff_dim_factor"],

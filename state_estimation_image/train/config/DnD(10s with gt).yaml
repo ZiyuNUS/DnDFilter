@@ -42,6 +42,7 @@ normalize: True
 # context
 context_type: temporal
 context_size: 3 # 5
+visual_size: 4 # 3+1
 
 # action output params
 len_traj_pred: 4

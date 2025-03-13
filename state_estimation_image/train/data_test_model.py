@@ -238,7 +238,7 @@ def main(config):
         )
     vision_encoder = ViNT(
         obs_encoding_size=config["encoding_size"],
-        context_size=config["context_size"] + 1,
+        context_size=config["visual_size"],
         mha_num_attention_heads=config["mha_num_attention_heads"],
         mha_num_attention_layers=config["mha_num_attention_layers"],
         mha_ff_dim_factor=config["mha_ff_dim_factor"],
@@ -313,9 +313,9 @@ def main(config):
     )
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/DnD(10s with gt).yaml"
+    config_route = "config/DnD(10s).yaml"
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = 'state_image/DnD(10s)'
+    config['load_run'] = 'state_image/DnD(ts2)'
     main(config)
