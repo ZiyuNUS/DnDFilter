@@ -33,9 +33,7 @@ def _compute_losses_nomad(
         noise_scheduler,
         batch_obs_images,
         ground_truth,
-        indicator,
         device: torch.device,
-        block = None,
 ):
     pred_horizon = ground_truth.shape[1]
     action_dim = ground_truth.shape[2]
@@ -93,37 +91,8 @@ def evaluate_nomad(
                 ground_truth,
             ) = data
 
-            block = ground_truth[:, 0, 4]
             ground_truth = ground_truth[:, :, :4]
             obs_images = torch.split(obs_image, 3, dim=1)
-
-            vel = ground_truth[0, 0, 2:4].to(device)
-            pos = ground_truth[:, 0, :2].to(device)
-            predict_pos = torch.zeros(ground_truth.shape[0], 2).to(device)
-            predict_pos[0] = pos[0]
-            for count in range(1, ground_truth.shape[0]):
-                if block[count - 1] < 2000:
-                    predict_pos[count] = predict_pos[count - 1] + vel
-                else:
-                    predict_pos[count] = pos[count - 1] + vel
-
-            gt_pos = predict_pos.long()
-
-            img_batch_tensor = torch.zeros(gt_pos.shape[0], 3, 128, 128)
-            for count in range(gt_pos.shape[0]):
-                if block[count] < 2000:
-                    x_center, y_center = gt_pos[count, 0].item(), gt_pos[count, 1].item()
-                    for x in range(max(0, x_center - 3), min(128, x_center + 3 + 1)):
-                        for y in range(max(0, y_center - 3), min(128, y_center + 3 + 1)):
-                            if (x - x_center) ** 2 + (y - y_center) ** 2 <= 3 ** 2:
-                                img_batch_tensor[count, 0, y, x] = 1.0
-                                img_batch_tensor[count, 1, y, x] = 0.0
-                                img_batch_tensor[count, 2, y, x] = 0.0
-                else:
-                    # img_batch_tensor[count] = obs_images[3][count]
-                    img_batch_tensor[count] = torch.zeros(3, 128, 128)
-
-            # obs_images += (img_batch_tensor,)
 
             batch_obs_images = [transform(obs) for obs in obs_images]
             batch_obs_images = torch.cat(batch_obs_images, dim=1).to(device)
@@ -135,9 +104,7 @@ def evaluate_nomad(
                 noise_scheduler,
                 batch_obs_images,
                 ground_truth,
-                predict_pos.cpu(),
                 device,
-                block,
             )
             global total_loss, total_var
             total_loss += losses['gc_action_loss'].item()
@@ -206,9 +173,7 @@ def eval_loop_nomad(
     ema_model = EMAModel(model=model, power=0.75)
     for epoch in range(1):
         for dataset_type in test_dataloaders:
-            print(
-                f"Start {dataset_type} ViNT DP Testing Epoch {epoch}/{current_epoch + epochs - 1}"
-            )
+            print(f"Start {dataset_type} ViNT DP Testing Epoch {epoch}/{current_epoch + epochs - 1}")
             loader = test_dataloaders[dataset_type]
             evaluate_nomad(
                 eval_type=dataset_type,
@@ -229,22 +194,14 @@ def load_model(model, checkpoint: dict) -> None:
 def main(config):
     if torch.cuda.is_available():
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        if "gpu_ids" not in config:
-            config["gpu_ids"] = [0]
-        elif type(config["gpu_ids"]) == int:
-            config["gpu_ids"] = [config["gpu_ids"]]
-        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(
-            [str(x) for x in config["gpu_ids"]]
-        )
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(x) for x in config["gpu_ids"]])
     first_gpu_id = config["gpu_ids"][0]
-    device = torch.device(
-        f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device(f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu")
+
     cudnn.benchmark = True
-    transform = ([
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    transform = ([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),])
     transform = transforms.Compose(transform)
+
     test_dataloaders = {}
     for dataset_name in config["datasets"]:
         data_config = config["datasets"][dataset_name]
