@@ -34,7 +34,7 @@ def _compute_losses_nomad(
 
     ground_truth = unnormalize_data(ground_truth.cpu(), ACTION_STATS)
     gc_action_loss = action_reduce(F.mse_loss(predict_positions.cpu(), ground_truth, reduction="none"))
-    results = {"gc_action_loss": torch.sqrt(gc_action_loss),}
+    results = {"gc_action_loss": gc_action_loss,}
     return results
 
 def _compute_losses_nomad_evaluate(
@@ -140,7 +140,7 @@ def train_nomad(
             losses = _compute_losses_nomad(predict_positions,ground_truth)
             total_train_loss += losses['gc_action_loss'].item()
         if use_wandb and wandb_log_freq != 0:
-            log_data = {'pos_loss (test)': total_train_loss / (i + 1)}
+            log_data = {'pos_loss (train)': total_train_loss / (i + 1)}
             wandb.log(log_data, commit=True)
 
 
@@ -214,8 +214,6 @@ def evaluate_nomad(
         if use_wandb and wandb_log_freq != 0:
             log_data = {'pos_loss (test)': total_test_loss / (i + 1)}
             wandb.log(log_data, commit=True)
-
-
 
 def normalize_data(data, stats):
     ndata = (data - stats['min']) / (stats['max'] - stats['min'])
