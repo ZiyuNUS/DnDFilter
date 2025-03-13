@@ -1,0 +1,66 @@
+project_name: state_image
+run_name: state_image
+
+# training setup
+use_wandb: true # set to false if you don't want to log to wandb
+train: true # 是否训练/评估
+batch_size: 94 # 训练使用batch大小
+eval_batch_size: 94 # 评估使用batch大小
+epochs: 300 # 训练epoch大小
+gpu_ids: [0] # 使用gpu编号
+num_workers: 1 # dataloader线程
+lr: 1e-4 # 优化器学习率
+optimizer: adamw # 使用优化器名称
+clipping: False # 是否使用梯度裁剪
+max_norm: 1. # 梯度裁剪的最大范数
+scheduler: "cosine" # 学习率规划器
+warmup: True # 是否使用warmup
+warmup_epochs: 4 # warmup的epoch数量
+seed: 0 # 训练时的随机数种子
+
+training_setting: "no_pred"
+use_gt: 0
+
+vision_encoder: vint
+encoding_size: 256
+obs_encoder: efficientnet-b0
+attn_unet: False
+cond_predict_scale: False
+mha_num_attention_heads: 4
+mha_num_attention_layers: 4
+mha_ff_dim_factor: 4
+down_dims: [64, 128, 256]
+
+# diffusion model params
+num_diffusion_iters: 10
+
+# normalization for the action space
+normalize: True
+
+# context
+context_type: temporal
+context_size: 3 # 5
+visual_size: 3 # 3+1
+
+# action output params
+len_traj_pred: 4
+
+# dataset specific parameters
+image_size: [128, 128] # width, height
+datasets:
+  RED:
+    train_data_folder: dataset/circles=100_frames=100_noise=True/train=500
+    test_data_folder: dataset/circles=100_frames=100_noise=True/test=100
+    train: DND_train/data/data_splits/RED_96_100/train/
+    test: DND_train/data/data_splits/RED_96_100/test/
+    end_slack: 0
+    negative_mining: True
+    record_spacing : 2
+
+# logging stuff
+## =0 turns off
+print_log_freq: 2 # in iterations
+pairwise_test_freq: 0 # in epochs
+eval_fraction: 0.5
+wandb_log_freq: 1 # in iterations
+eval_freq: 2 # in epochs
