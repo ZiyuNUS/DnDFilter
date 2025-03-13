@@ -2,7 +2,7 @@ project_name: state_image
 run_name: state_image
 
 # training setup
-use_wandb: false # set to false if you don't want to log to wandb
+use_wandb: true # set to false if you don't want to log to wandb
 train: true
 batch_size: 94
 eval_batch_size: 94
@@ -17,9 +17,9 @@ scheduler: "cosine"
 warmup: True
 warmup_epochs: 4
 seed: 0
-#load_run: logs/state/Method11_dif10
+load_run: state_image/DnD(10s)
 
-training_setting: "step_2"
+training_setting: "step_1"
 
 # model params
 vision_encoder: vint
