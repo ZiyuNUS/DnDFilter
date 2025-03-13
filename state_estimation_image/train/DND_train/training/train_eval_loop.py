@@ -116,8 +116,6 @@ def train_eval_loop(
     print()
 
 
-def load_model(model, model_type, checkpoint: dict) -> None:
-    """Load model from checkpoint."""
-    if model_type == "nomad":
-        state_dict = checkpoint
-        model.load_state_dict(state_dict, strict=False)
+def load_model(model, checkpoint: dict) -> None:
+    state_dict = checkpoint
+    model.load_state_dict(state_dict, strict=False)

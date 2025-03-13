@@ -19,7 +19,7 @@ warmup_epochs: 4
 seed: 0
 load_run: state_image/DnD(10s)
 
-training_setting: "step_1"
+training_setting: "step_3"
 
 # model params
 vision_encoder: vint
