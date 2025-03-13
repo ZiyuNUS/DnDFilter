@@ -58,6 +58,7 @@ def evaluate_nomad(
         device: torch.device,
         noise_scheduler: DDPMScheduler,
         epoch: int,
+        use_gt: int,
 ):
     ema_model = ema_model.averaged_model
     ema_model.eval()
@@ -107,8 +108,8 @@ def evaluate_nomad(
                 conditions.append(condition)
                 positions.append(model_output_dict['gc_actions'] * 128)
                 pos = model_output_dict['gc_actions'][:, 0, :] * 128 + vel
-                # if ii + 1 < 93:
-                #     pos = ground_truth[ii+1, 1, :2].to(device).unsqueeze(0)
+                if (ii + 1 < 93) & use_gt:
+                    pos = ground_truth[ii+1, 1, :2].to(device).unsqueeze(0)
             b = time.time()
             print(b-a)
             predict_positions = torch.cat(positions, dim=0)
@@ -167,6 +168,7 @@ def eval_loop_nomad(
         test_dataloaders: Dict[str, DataLoader],
         transform: transforms,
         epochs: int,
+        use_gt: int,
         device: torch.device,
         current_epoch: int = 0,
         eval_freq: int = 1,
@@ -184,6 +186,7 @@ def eval_loop_nomad(
                 device=device,
                 noise_scheduler=noise_scheduler,
                 epoch=epoch,
+                use_gt=use_gt,
             )
         if lr_scheduler is not None:
             lr_scheduler.step()
@@ -306,12 +309,13 @@ def main(config):
         device=device,
         current_epoch=current_epoch,
         eval_freq=config["eval_freq"],
+        use_gt=config["use_gt"],
     )
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/step5.yaml"
+    config_route = "config/DnD(10s with gt).yaml"
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = 'state_image/DnD(5s)'
+    config['load_run'] = 'state_image/DnD(10s)'
     main(config)
