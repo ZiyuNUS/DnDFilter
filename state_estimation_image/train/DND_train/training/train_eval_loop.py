@@ -16,7 +16,7 @@ import importlib
 
 def dynamic_import(train_module_path):
     module = importlib.import_module(train_module_path)
-    return module.train_nomad, module.evaluate_nomad
+    return module.train_dnd, module.evaluate_dnd
 
 def train_eval_loop(
         train_model: bool,
@@ -41,7 +41,7 @@ def train_eval_loop(
     ema_model = EMAModel(model=model, power=0.75)
 
     train_module_path = f"DND_train.training.train_{training_setting}"  # 直接用字符串
-    train_nomad, evaluate_nomad = dynamic_import(train_module_path)
+    train_dnd, evaluate_dnd = dynamic_import(train_module_path)
 
     for epoch in range(current_epoch, current_epoch + epochs):
         if train_model:
@@ -49,7 +49,7 @@ def train_eval_loop(
                 f"Start ViNT DP Training Epoch {epoch}/{current_epoch + epochs - 1}"
             )
             torch.cuda.empty_cache()
-            train_nomad(
+            train_dnd(
                 model=model,
                 ema_model=ema_model,
                 optimizer=optimizer,
@@ -88,7 +88,7 @@ def train_eval_loop(
                     f"Start {dataset_type} ViNT DP Testing Epoch {epoch}/{current_epoch + epochs - 1}"
                 )
                 loader = test_dataloaders[dataset_type]
-                evaluate_nomad(
+                evaluate_dnd(
                     eval_type=dataset_type,
                     ema_model=ema_model,
                     dataloader=loader,

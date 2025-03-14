@@ -23,7 +23,7 @@ ACTION_STATS = {}
 for key in data_config['state_stats']:
     ACTION_STATS[key] = np.array(data_config['state_stats'][key])
 
-def _compute_losses_nomad(
+def _compute_losses_dnd(
         predict_positions,
         ground_truth,
 ):
@@ -37,7 +37,7 @@ def _compute_losses_nomad(
     results = {"gc_action_loss": gc_action_loss,}
     return results
 
-def _compute_losses_nomad_evaluate(
+def _compute_losses_dnd_evaluate(
         predict_positions,
         ground_truth,
 ):
@@ -51,7 +51,7 @@ def _compute_losses_nomad_evaluate(
     results = {"gc_action_loss": gc_action_loss,}
     return results
 
-def train_nomad(
+def train_dnd(
     model: nn.Module,
     ema_model: EMAModel,
     optimizer: Adam,
@@ -137,14 +137,14 @@ def train_nomad(
             if use_wandb:
                 wandb.log({"diffusion_loss": loss.item()})
 
-            losses = _compute_losses_nomad(predict_positions,ground_truth)
+            losses = _compute_losses_dnd(predict_positions,ground_truth)
             total_train_loss += losses['gc_action_loss'].item()
         if use_wandb and wandb_log_freq != 0:
             log_data = {'pos_loss (train)': total_train_loss / (i + 1)}
             wandb.log(log_data, commit=True)
 
 
-def evaluate_nomad(
+def evaluate_dnd(
     eval_type: str,
     ema_model: EMAModel,
     dataloader: DataLoader,
@@ -209,7 +209,7 @@ def evaluate_nomad(
             predict_positions = torch.cat(positions, dim=0)
             ground_truth = ground_truth[:, :, :2]
 
-            losses = _compute_losses_nomad_evaluate(predict_positions, ground_truth)
+            losses = _compute_losses_dnd_evaluate(predict_positions, ground_truth)
             total_test_loss = total_test_loss + losses['gc_action_loss'].item()
         if use_wandb and wandb_log_freq != 0:
             log_data = {'pos_loss (test)': total_test_loss / (i + 1)}

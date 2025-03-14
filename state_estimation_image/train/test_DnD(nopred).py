@@ -18,7 +18,6 @@ from DND_train.models.dnd.vint import ViNT, replace_bn_with_gn
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
 from DND_train.data.dnd_dataset import DnD_Dataset
 from typing import Dict
-import matplotlib.pyplot as plt
 
 with open(os.path.join(os.path.dirname(__file__), "DND_train/data/data_config.yaml"), "r") as f:
     data_config = yaml.safe_load(f)
@@ -28,7 +27,7 @@ for key in data_config['state_stats']:
 i = 0
 total_loss = 0
 total_var = 0
-def _compute_losses_nomad(
+def _compute_losses_dnd(
         ema_model,
         noise_scheduler,
         batch_obs_images,
@@ -66,7 +65,7 @@ def _compute_losses_nomad(
     }
     return results
 
-def evaluate_nomad(
+def evaluate_dnd(
         eval_type: str,
         ema_model: EMAModel,
         dataloader: DataLoader,
@@ -99,7 +98,7 @@ def evaluate_nomad(
 
             ground_truth = ground_truth[:, :, :2]
 
-            losses = _compute_losses_nomad(
+            losses = _compute_losses_dnd(
                 ema_model,
                 noise_scheduler,
                 batch_obs_images,
@@ -159,7 +158,7 @@ def model_output(
         'gc_actions': gc_actions,
     }
 
-def eval_loop_nomad(
+def eval_loop_dnd(
         model: nn.Module,
         lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
         noise_scheduler: DDPMScheduler,
@@ -175,7 +174,7 @@ def eval_loop_nomad(
         for dataset_type in test_dataloaders:
             print(f"Start {dataset_type} ViNT DP Testing Epoch {epoch}/{current_epoch + epochs - 1}")
             loader = test_dataloaders[dataset_type]
-            evaluate_nomad(
+            evaluate_dnd(
                 eval_type=dataset_type,
                 ema_model=ema_model,
                 dataloader=loader,
@@ -295,7 +294,7 @@ def main(config):
         load_model(model, latest_checkpoint)
         if scheduler is not None and "scheduler" in latest_checkpoint:
             scheduler.load_state_dict(latest_checkpoint["scheduler"].state_dict())
-    eval_loop_nomad(
+    eval_loop_dnd(
         model=model,
         lr_scheduler=scheduler,
         noise_scheduler=noise_scheduler,
