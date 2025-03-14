@@ -48,12 +48,11 @@ def _compute_losses_dnd(
     gc_actions = model_output_dict['gc_actions']
 
     def action_reduce(unreduced_loss: torch.Tensor):
-        # Reduce over non-batch dimensions to get loss per batch element
         while unreduced_loss.dim() > 1:
             unreduced_loss = unreduced_loss.mean(dim=-1)
         return unreduced_loss.mean()
+
     gc_actions = unnormalize_data(gc_actions, ACTION_STATS)
-    # gc_action_loss = action_reduce(F.mse_loss(gc_actions, ground_truth, reduction="none"))
     squared_errors = F.mse_loss(gc_actions[:, 0, :], ground_truth[:, 0, :], reduction="none")
     gc_action_loss = torch.sqrt(action_reduce(squared_errors))
     sample_rmse = torch.sqrt(squared_errors.mean(dim=1))

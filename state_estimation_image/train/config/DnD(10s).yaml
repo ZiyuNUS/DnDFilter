@@ -2,7 +2,7 @@ project_name: state_image
 run_name: state_image
 
 # training setup
-use_wandb: false # set to false if you don't want to log to wandb
+use_wandb: true # set to false if you don't want to log to wandb
 train: true
 batch_size: 94
 eval_batch_size: 94

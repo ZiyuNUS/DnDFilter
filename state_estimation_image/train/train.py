@@ -184,7 +184,7 @@ def main(config):
 
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/DnD(10s).yaml"
+    config_route = "config/DnD(no pred).yaml"
 
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
