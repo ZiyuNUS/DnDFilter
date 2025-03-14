@@ -241,7 +241,7 @@ def main(config):
     if "load_run" in config:
         load_project_folder = os.path.join("logs", config["load_run"])
         print("Loading model from ", load_project_folder)
-        latest_path = os.path.join(load_project_folder, "ema_40.pth")
+        latest_path = os.path.join(load_project_folder, "final.pth")
         latest_checkpoint = torch.load(latest_path)  # f"cuda:{}" if torch.cuda.is_available() else "cpu")
         load_model(model, latest_checkpoint)
         if "epoch" in latest_checkpoint:
