@@ -137,8 +137,7 @@ def model_output(
 ):
     model = model.to(device)
     obs_cond = model("vision_encoder", obs_img=batch_obs_images).to(device)
-    noisy_diffusion_output = torch.randn(
-        (len(obs_cond), pred_horizon, action_dim), device=device)
+    noisy_diffusion_output = torch.randn((len(obs_cond), pred_horizon, action_dim), device=device)
     diffusion_output = noisy_diffusion_output
 
     for k in noise_scheduler.timesteps[:]:
