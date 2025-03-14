@@ -17,6 +17,7 @@ scheduler: "cosine" # 学习率规划器
 warmup: True # 是否使用warmup
 warmup_epochs: 4 # warmup的epoch数量
 seed: 0 # 训练时的随机数种子
+load_run: state_image/DnD(no pred)
 
 training_setting: "no_pred"
 use_gt: 0
