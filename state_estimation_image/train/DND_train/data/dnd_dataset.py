@@ -9,7 +9,11 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from DND_train.data.data_utils import get_data_path
+def get_data_path(data_folder: str, f: str, time: int, data_type: str = "image"):
+    data_ext = {
+        "image": ".pt",
+    }
+    return os.path.join(data_folder, f, f"{str(time)}{data_ext[data_type]}")
 
 class DnD_Dataset(Dataset):
     def __init__(
