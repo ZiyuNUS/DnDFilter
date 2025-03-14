@@ -13,23 +13,22 @@ from torchvision import transforms
 import torch.backends.cudnn as cudnn
 from warmup_scheduler import GradualWarmupScheduler
 from DND_train.models.dnd.dnd import DnD
+from DND_train.models.dnd.vint import replace_bn_with_gn
 from DND_train.models.dnd.vint_bkf import ViNT_bkf
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
 from DND_train.data.dnd_dataset import DnD_Dataset
 from typing import Dict
 from DND_train.training import Kalman
 
-with open(os.path.join(os.path.dirname(__file__), "/home/yuyu/diffusion_model/state-estimation_image/train/vint_train/data/data_config.yaml"), "r") as f:
+with open(os.path.join(os.path.dirname(__file__), "DND_train/data/data_config.yaml"), "r") as f:
     data_config = yaml.safe_load(f)
 ACTION_STATS = {}
 for key in data_config['state_stats']:
     ACTION_STATS[key] = np.array(data_config['state_stats'][key])
-
-total_loss = 0
 i = 0
+total_loss = 0
 total_var = 0
-count = 0
-def _compute_losses_nomad(
+def _compute_losses_dnd(
         gc_actions,
         ground_truth,
 ):
@@ -43,10 +42,6 @@ def _compute_losses_nomad(
     squared_errors = F.mse_loss(gc_actions.cpu(), ground_truth.cpu(), reduction="none")
     gc_action_loss = torch.sqrt(action_reduce(squared_errors))
 
-    global count
-    torch.save((gc_actions.cpu(), ground_truth.cpu()), f"video/positionsbkf_{count}.pt")
-    count += 1
-
     sample_rmse = torch.sqrt(squared_errors.mean(dim=1))
     gc_action_loss_variance = sample_rmse.std()
 
@@ -56,7 +51,7 @@ def _compute_losses_nomad(
     }
     return results
 
-def evaluate_nomad(
+def evaluate_dnd(
         eval_type: str,
         ema_model: EMAModel,
         dataloader: DataLoader,
@@ -103,7 +98,7 @@ def evaluate_nomad(
             groundtruth = torch.empty_like(position_prediction)  # 创建一个与 obsgoal_cond 具有相同属性的新张量
             groundtruth.copy_(ground_truth[1:, 0, :2])
 
-            losses = _compute_losses_nomad(
+            losses = _compute_losses_dnd(
                     position_prediction,
                     groundtruth,
                 )
@@ -124,7 +119,7 @@ def unnormalize_data(ndata, stats):
     data = data * (128 + 128) - 128
     return data
 
-def eval_loop_nomad(
+def eval_loop_dnd(
         model: nn.Module,
         test_dataloaders: Dict[str, DataLoader],
         transform: transforms,
@@ -139,7 +134,7 @@ def eval_loop_nomad(
             f"Start {dataset_type} ViNT DP Testing Epoch {1}/{current_epoch + epochs - 1}"
         )
         loader = test_dataloaders[dataset_type]
-        evaluate_nomad(
+        evaluate_dnd(
             eval_type=dataset_type,
             ema_model=ema_model,
             dataloader=loader,
@@ -155,22 +150,14 @@ def load_model(model, checkpoint: dict) -> None:
 def main(config):
     if torch.cuda.is_available():
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        if "gpu_ids" not in config:
-            config["gpu_ids"] = [0]
-        elif type(config["gpu_ids"]) == int:
-            config["gpu_ids"] = [config["gpu_ids"]]
-        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(
-            [str(x) for x in config["gpu_ids"]]
-        )
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(x) for x in config["gpu_ids"]])
     first_gpu_id = config["gpu_ids"][0]
-    device = torch.device(
-        f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device(f"cuda:{first_gpu_id}" if torch.cuda.is_available() else "cpu")
+
     cudnn.benchmark = True
-    transform = ([
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    transform = ([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),])
     transform = transforms.Compose(transform)
+
     test_dataloaders = {}
     for dataset_name in config["datasets"]:
         data_config = config["datasets"][dataset_name]
@@ -179,7 +166,7 @@ def main(config):
         if "record_spacing" not in data_config:
             data_config["record_spacing"] = 1
         for data_split_type in ["test"]:
-            dataset = ViNT_Dataset(
+            dataset = DnD_Dataset(
                 data_folder=data_config[f"{data_split_type}_data_folder"],
                 data_split_folder=data_config[data_split_type],
                 dataset_name=dataset_name,
@@ -201,34 +188,22 @@ def main(config):
             num_workers=0,
             drop_last=False,
         )
-    if config["model_type"] == "nomad":
-        if config["vision_encoder"] == "nomad_vint":
-            vision_encoder = NoMaD_ViNT(
-                obs_encoding_size=config["encoding_size"],
-                context_size=config["context_size"],
-                mha_num_attention_heads=config["mha_num_attention_heads"],
-                mha_num_attention_layers=config["mha_num_attention_layers"],
-                mha_ff_dim_factor=config["mha_ff_dim_factor"],
-            )
-            vision_encoder = replace_bn_with_gn(vision_encoder)
-        elif config["vision_encoder"] == "bkf":
-            vision_encoder = ViNT_bkf(
-                obs_encoding_size=config["encoding_size"],
-                context_size=config["context_size"],
-                mha_num_attention_heads=config["mha_num_attention_heads"],
-                mha_num_attention_layers=config["mha_num_attention_layers"],
-                mha_ff_dim_factor=config["mha_ff_dim_factor"],
-            )
-            vision_encoder = replace_bn_with_gn(vision_encoder)
-        else:
-            raise ValueError(f"Vision encoder {config['vision_encoder']} not supported")
+    if config["vision_encoder"] == "bkf":
+        vision_encoder = ViNT_bkf(
+            obs_encoding_size=config["encoding_size"],
+            context_size=config["context_size"],
+            mha_num_attention_heads=config["mha_num_attention_heads"],
+            mha_num_attention_layers=config["mha_num_attention_layers"],
+            mha_ff_dim_factor=config["mha_ff_dim_factor"],
+        )
+        vision_encoder = replace_bn_with_gn(vision_encoder)
     noise_pred_net = ConditionalUnet1D(
         input_dim=2,
         global_cond_dim=config["encoding_size"],
         down_dims=config["down_dims"],
         cond_predict_scale=config["cond_predict_scale"],
     )
-    model = NoMaD(
+    model = DnD(
         vision_encoder=vision_encoder,
         noise_pred_net=noise_pred_net,
     )
@@ -275,7 +250,7 @@ def main(config):
             optimizer.load_state_dict(latest_checkpoint["optimizer"].state_dict())
         if scheduler is not None and "scheduler" in latest_checkpoint:
             scheduler.load_state_dict(latest_checkpoint["scheduler"].state_dict())
-    eval_loop_nomad(
+    eval_loop_dnd(
         model=model,
         test_dataloaders=test_dataloaders,
         transform=transform,
@@ -285,9 +260,9 @@ def main(config):
     )
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/state_bkf.yaml"
+    config_route = "config/Backprop KF.yaml"
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = '/home/yuyu/diffusion_model/statekf-estimation_image/train/logs/disk_tracking/BKF'
+    config['load_run'] = 'state_image/BKF'
     main(config)
