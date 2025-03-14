@@ -12,12 +12,12 @@ from torch.optim import AdamW
 from torchvision import transforms
 import torch.backends.cudnn as cudnn
 from warmup_scheduler import GradualWarmupScheduler
-from vint_train.models.nomad.nomad import NoMaD
-from vint_train.models.nomad.vint_bkf import ViNT_bkf
+from DND_train.models.dnd.dnd import DnD
+from DND_train.models.dnd.vint_bkf import ViNT_bkf
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
-from vint_train.data.vint_dataset import ViNT_Dataset
+from DND_train.data.dnd_dataset import DnD_Dataset
 from typing import Dict
-from vint_train.training import Kalman
+from DND_train.training import Kalman
 
 with open(os.path.join(os.path.dirname(__file__), "/home/yuyu/diffusion_model/state-estimation_image/train/vint_train/data/data_config.yaml"), "r") as f:
     data_config = yaml.safe_load(f)
