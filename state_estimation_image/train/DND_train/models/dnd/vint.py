@@ -65,6 +65,7 @@ class ViNT(nn.Module):
         )
         self.sa_encoder = nn.TransformerEncoder(self.sa_layer, num_layers=mha_num_attention_layers)
 
+
     def forward(self, obs_img: torch.tensor):
         # Get the observation encoding
         obs_img = torch.split(obs_img, 3, dim=1)
