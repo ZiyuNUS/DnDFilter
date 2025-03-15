@@ -19,7 +19,7 @@ warmup_epochs: 4 # warmup的epoch数量
 seed: 0 # 训练时的随机数种子
 #load_run: state_image/DnD(10s)
 
-training_setting: "step_1"
+training_setting: "bkf"
 use_gt: 0
 
 # model params
