@@ -17,7 +17,7 @@ scheduler: "cosine" # 学习率规划器
 warmup: True # 是否使用warmup
 warmup_epochs: 4 # warmup的epoch数量
 seed: 0 # 训练时的随机数种子
-#load_run: state_image/DnD(10s)
+load_run: state_image/Backprop KF
 
 training_setting: "bkf"
 use_gt: 0
@@ -65,4 +65,4 @@ print_log_freq: 1 # in iterations
 pairwise_test_freq: 0 # in epochs
 eval_fraction: 0.5
 wandb_log_freq: 1 # in iterations
-eval_freq: 50 # in epochs
+eval_freq: 1 # in epochs
