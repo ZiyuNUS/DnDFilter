@@ -19,7 +19,7 @@ warmup_epochs: 4
 seed: 0
 load_run: state_image/VinT
 
-training_setting: "VinT"
+training_setting: "VinT_step2"
 use_gt: 0
 
 # model params
