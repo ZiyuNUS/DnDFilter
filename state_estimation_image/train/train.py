@@ -107,7 +107,7 @@ def main(config):
             mha_num_attention_layers=config["mha_num_attention_layers"],
             mha_ff_dim_factor=config["mha_ff_dim_factor"],
         )
-    elif config["vision_encoder"] == "VinT(w.o. pred)":
+    elif config["vision_encoder"] == "VinT(w.o. pred)" or config["vision_encoder"] == "VinT":
         vision_encoder = VinT_only(
             obs_encoding_size=config["encoding_size"],
             context_size=config["visual_size"],
