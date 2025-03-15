@@ -183,7 +183,7 @@ def main(config):
     for dataset_type, dataset in test_dataloaders.items():
         test_dataloaders[dataset_type] = DataLoader(
             dataset,
-            batch_size=config["eval_batch_size"] - config["context_size"] * config["datasets"]["RED"]["record_spacing"],
+            batch_size=config["eval_batch_size"],
             shuffle=False,
             num_workers=0,
             drop_last=False,
@@ -264,5 +264,5 @@ if __name__ == "__main__":
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = 'state_image/BKF'
+    config['load_run'] = 'state_image/Backprop KF'
     main(config)

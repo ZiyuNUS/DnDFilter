@@ -2,6 +2,7 @@ import torch
 from typing import Optional, Tuple, Callable
 from efficientnet_pytorch import EfficientNet
 import torch.nn as nn
+import math
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_seq_len=6):
