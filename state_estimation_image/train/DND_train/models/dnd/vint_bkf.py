@@ -1,5 +1,5 @@
 import torch
-from typing import Optional, Tuple, Callable
+from typing import Optional, Callable
 from efficientnet_pytorch import EfficientNet
 import torch.nn as nn
 import math
