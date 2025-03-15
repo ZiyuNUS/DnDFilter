@@ -14,7 +14,7 @@ import torch.backends.cudnn as cudnn
 from warmup_scheduler import GradualWarmupScheduler
 from DND_train.models.dnd.dnd import DnD
 from DND_train.models.dnd.vint import replace_bn_with_gn
-from DND_train.models.dnd.vint_VinT_wo_pred import VinT_wo_pred
+from DND_train.models.dnd.vint_VinT_only import VinT_only
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
 from DND_train.data.dnd_dataset import DnD_Dataset
 from typing import Dict
@@ -199,7 +199,7 @@ def main(config):
         )
 
     if config["vision_encoder"] == "VinT(w.o. pred)":
-        vision_encoder = VinT_wo_pred(
+        vision_encoder = VinT_only(
             obs_encoding_size=config["encoding_size"],
             context_size=config["context_size"],
             mha_num_attention_heads=config["mha_num_attention_heads"],
