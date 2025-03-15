@@ -16,6 +16,7 @@ from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
 from DND_train.models.dnd.dnd import DnD
 from DND_train.models.dnd.vint import ViNT, replace_bn_with_gn
 from DND_train.models.dnd.vint_bkf import ViNT_bkf
+from DND_train.models.dnd.vint_VinT_wo_pred import VinT_wo_pred
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
 from DND_train.data.dnd_dataset import DnD_Dataset
 from DND_train.training.train_eval_loop import train_eval_loop, load_model
@@ -100,6 +101,14 @@ def main(config):
         vision_encoder = replace_bn_with_gn(vision_encoder)
     elif config["vision_encoder"] == "bkf":
         vision_encoder = ViNT_bkf(
+            obs_encoding_size=config["encoding_size"],
+            context_size=config["context_size"],
+            mha_num_attention_heads=config["mha_num_attention_heads"],
+            mha_num_attention_layers=config["mha_num_attention_layers"],
+            mha_ff_dim_factor=config["mha_ff_dim_factor"],
+        )
+    elif config["vision_encoder"] == "VinT(w.o. pred)":
+        vision_encoder = VinT_wo_pred(
             obs_encoding_size=config["encoding_size"],
             context_size=config["context_size"],
             mha_num_attention_heads=config["mha_num_attention_heads"],
@@ -193,7 +202,7 @@ def main(config):
 
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/Backprop KF.yaml"
+    config_route = "config/VinT(w.o. pred).yaml"
 
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
