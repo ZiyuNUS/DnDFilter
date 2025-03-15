@@ -67,7 +67,6 @@ def train_dnd(
 
             position_prediction = KalmanModel(z_list, L_hat_list, pos0, vel0, simplified_cov_update)
             position_prediction = position_prediction.squeeze(1)
-            # position_prediction = z_list[1:]
 
             groundtruth = torch.empty_like(position_prediction)  #
             groundtruth.copy_(ground_truth[1:, 0, :2])
@@ -134,7 +133,6 @@ def evaluate_dnd(
 
             position_prediction = KalmanModel(z_list, L_hat_list, pos0, vel0, simplified_cov_update)
             position_prediction = position_prediction.squeeze(1)
-            # position_prediction = z_list[1:]
 
             groundtruth = torch.empty_like(position_prediction)
             groundtruth.copy_(ground_truth[1:, 0, :2])
