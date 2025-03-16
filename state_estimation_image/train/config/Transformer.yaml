@@ -65,4 +65,4 @@ print_log_freq: 1 # in iterations
 pairwise_test_freq: 0 # in epochs
 eval_fraction: 0.5
 wandb_log_freq: 1 # in iterations
-eval_freq: 2 # in epochs
+eval_freq: 1 # in epochs
