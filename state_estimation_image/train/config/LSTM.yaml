@@ -19,7 +19,7 @@ warmup_epochs: 4
 seed: 0
 load_run: state_image/LSTM
 
-training_setting: "LSTM"
+training_setting: "lstm"
 use_gt: 0
 
 # model params
