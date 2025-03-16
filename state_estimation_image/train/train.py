@@ -17,6 +17,7 @@ from DND_train.models.dnd.dnd import DnD
 from DND_train.models.dnd.vint import ViNT, replace_bn_with_gn
 from DND_train.models.dnd.vint_bkf import ViNT_bkf
 from DND_train.models.dnd.vint_VinT_only import VinT_only
+from DND_train.models.dnd.vint_lstm import ViNT_lstm
 from diffusion_policy.model.diffusion.conditional_unet1d import ConditionalUnet1D
 from DND_train.data.dnd_dataset import DnD_Dataset
 from DND_train.training.train_eval_loop import train_eval_loop, load_model
@@ -115,6 +116,14 @@ def main(config):
             mha_num_attention_layers=config["mha_num_attention_layers"],
             mha_ff_dim_factor=config["mha_ff_dim_factor"],
         )
+    elif config["vision_encoder"] == "lstm":
+        vision_encoder = ViNT_lstm(
+            obs_encoding_size=config["encoding_size"],
+            context_size=config["visual_size"],
+            mha_num_attention_heads=config["mha_num_attention_heads"],
+            mha_num_attention_layers=config["mha_num_attention_layers"],
+            mha_ff_dim_factor=config["mha_ff_dim_factor"],
+        )
     else:
         raise ValueError(f"Vision encoder {config['vision_encoder']} not supported")
 
@@ -202,7 +211,7 @@ def main(config):
 
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/VinT.yaml"
+    config_route = "config/LSTM.yaml"
 
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
