@@ -317,5 +317,5 @@ if __name__ == "__main__":
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = 'state_image/DnD(ts2)'
+    config['load_run'] = 'state_image/DnD(10s)'
     main(config)
