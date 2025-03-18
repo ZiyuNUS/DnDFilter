@@ -23,7 +23,7 @@ checkpoints.
 - `./train/test_*.py`: validating script for DnD Filters and baselines.
 - `./train/config/`: training configurations for DnD Filter and baselines.
 - `./train/dataset/`: dataset used for training and validating.
-- `./train/logs/`: the pretrained model checkpoints for DnD Filter and baselines.
+- `./train/logs/`: the trained model checkpoints for DnD Filter and baselines.
 - `./train/DND_train/`: contains model files for DND Filter and baselines.
 
 # Getting Started
