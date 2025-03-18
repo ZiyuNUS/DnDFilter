@@ -4,6 +4,8 @@ This repository is the official implementation of the paper
 Models"](https://arxiv.org/abs/2503.01274), which has been submitted 
 to 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2025)
 
+![](./image/pipeline.png)
+
 DnD Filter is a differentiable filter that utilizes diffusion models for state 
 estimation of dynamic systems. Unlike conventional differentiable filters, which 
 often impose restrictive assumptions on process noise (e.g., Gaussianity), DnD Filter 
