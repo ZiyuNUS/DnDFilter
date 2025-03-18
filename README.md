@@ -39,4 +39,19 @@ Run the commands below inside the topmost directory:
     git clone git@github.com:real-stanford/diffusion_policy.git
     pip install -e diffusion_policy/
     ```
+# Training and Validating
+For training, modify the configuration file in `train.py` to match the training objective
+model, then directly run `train.py`.
+
+For validating, Run the corresponding `test_*` files in the `train/` folder.
+
+To train from a existing checkpoints, Add 
+```bash
+    load_run: <project_name>/<log_run_name>
+```
+to `.yaml` config file in `./train/config/`. The `*.pth` of the file you are 
+loading to be saved in this file structure and renamed to “latest”: 
+```bash
+   ./train/logs/<project_name>/<log_run_name>/latest.pth. 
+```
 # More details are coming soon.
