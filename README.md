@@ -106,4 +106,4 @@ The processed dataset we used can be found in
 }
 ```
 
-[//]: # (# More details are coming soon.)
+# More details are coming soon.
