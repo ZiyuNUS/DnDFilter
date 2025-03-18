@@ -24,7 +24,7 @@ checkpoints.
 - `./train/logs/`: the pretrained model checkpoints for DnD Filter and baselines.
 - `./train/DND_train/`: contains model files for DND Filter and baselines.
 
-# Set up
+# Getting Started
 Run the commands below inside the topmost directory:
 1. Set up the conda environment:
     ```bash
