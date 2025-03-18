@@ -54,4 +54,11 @@ loading to be saved in this file structure and renamed to “latest”:
 ```bash
    ./train/logs/<project_name>/<log_run_name>/latest.pth. 
 ```
+
+# Dataset
+1. The simulated disk tracking dataset can be generated using codes in 
+[repo](https://github.com/tiboat/BackpropKF_Reproduction). 
+2. KITTI Visual Odometry Dataset 
+(https://www.cvlibs.net/datasets/kitti/eval_odometry.php)
+
 # More details are coming soon.
