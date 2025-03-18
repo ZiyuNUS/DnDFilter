@@ -92,10 +92,11 @@ The dataset should be processed into following structure:
 `*.pt` containes the high-dimensional observation (e.g.,images) and `traj_data.pkl`
 and `traj_data.txt` contain related data of the sequence.
 
-The processed dataset we used can be found in [DataLink](https://huggingface.co/datasets/ZIYUNUS/DnD_Filter)
+The processed dataset we used can be found in 
+[DataLink](https://huggingface.co/datasets/ZIYUNUS/DnD_Filter).
 
 ## Citation
-* Please cite the paper if you used any materials from this repo, Thanks.
+
 ```
 @article{Wan2025DnD,
   title={DnD Filter: Differentiable State Estimation for Dynamic Systems using Diffusion Models},
