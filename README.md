@@ -97,7 +97,11 @@ The processed dataset we used can be found in [DataLink](https://huggingface.co/
 ## Citation
 * Please cite the paper if you used any materials from this repo, Thanks.
 ```
-@article{
+@article{Wan2025DnD,
+  title={DnD Filter: Differentiable State Estimation for Dynamic Systems using Diffusion Models},
+  author={Ziyu Wan, Lin Zhao},
+  journal={arXiv preprint arXiv:2503.01274},
+  year={2025}
 }
 ```
 
