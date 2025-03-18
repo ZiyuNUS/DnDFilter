@@ -13,6 +13,16 @@ approximate complex distributions. To the best of our knowledge, DnD Filter repr
 the first successful attempt to leverage diffusion models for state estimation, offering
 a flexible and powerful framework for nonlinear estimation under noisy measurements.
 
+# Overview
+This repository provides training and validating code for DnD Filter and trained model 
+checkpoints.
+
+- `./train/train.py`: training script to train DnD Filters and baselines.
+- `./train/test_*.py`: validating script for DnD Filters and baselines.
+- `./train/config/`: training configurations for DnD Filter and baselines.
+- `./train/dataset/`: dataset used for training and validating.
+- `./train/logs/`: the pretrained model checkpoints for DnD Filter and baselines.
+- `./train/DND_train/`: contains model files for DND Filter and baselines.
 
 # Set up
 Run the commands below inside the topmost directory:
