@@ -114,12 +114,19 @@ def evaluate_dnd(
             batch_obs_images = torch.cat(batch_obs_images, dim=1).to(device)
 
             ground_truth = ground_truth[:, :, :4] / 128
+            vel0 = ground_truth[0, 0, 2:]
+            pos0 = ground_truth[0, 0, :2]
 
             obsgoal_cond = ema_model("vision_encoder", obs_img=batch_obs_images)
 
             z_list = obsgoal_cond[:, :2]
+            L_hat_list = obsgoal_cond[:, 2:5]
 
-            position_prediction = z_list[1:]
+            KalmanModel = Kalman.KalmanFilter(device, 1).to(device)
+            simplified_cov_update = 0
+
+            position_prediction = KalmanModel(z_list, L_hat_list, pos0, vel0, simplified_cov_update)
+            position_prediction = position_prediction.squeeze(1)
 
             groundtruth = torch.empty_like(position_prediction)
             groundtruth.copy_(ground_truth[1:, 0, :2])
