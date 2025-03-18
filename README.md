@@ -89,5 +89,8 @@ The dataset should be processed into following structure:
         ├── traj_data.pkl
         └── traj_data.txt
 ```  
-The processed dataset we used can be found in 
+`*.pt` containes the high-dimensional observation (e.g.,images) and `traj_data.pkl`
+and `traj_Data.txt` contain related data of the sequence.
+
+The processed dataset we used can be found in [DataLink](https://huggingface.co/datasets/ZIYUNUS/DnD_Filter)
 # More details are coming soon.
