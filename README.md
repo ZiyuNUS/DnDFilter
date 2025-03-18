@@ -63,4 +63,31 @@ loading to be saved in this file structure and renamed to “latest”:
 2. KITTI Visual Odometry Dataset 
 (https://www.cvlibs.net/datasets/kitti/eval_odometry.php)
 
+The dataset should be processed into following structure:
+```
+├── <dataset_name>
+│   ├── <name_of_traj1>
+│   │   ├── 0.pt
+│   │   ├── 1.pt
+│   │   ├── ...
+│   │   ├── T_1.pt
+│   │   ├── traj_data.pkl
+│   │   └── traj_data.txt
+│   ├── <name_of_traj2>
+│   │   ├── 0.pt
+│   │   ├── 1.pt
+│   │   ├── ...
+│   │   ├── T_2.pt
+│   │   ├── traj_data.pkl
+│   │   └── traj_data.txt
+│   ...
+└── └── <name_of_trajN>
+    	├── 0.pt
+    	├── 1.pt
+    	├── ...
+        ├── T_N.pt
+        ├── traj_data.pkl
+        └── traj_data.txt
+```  
+The processed dataset we used can be found in 
 # More details are coming soon.
