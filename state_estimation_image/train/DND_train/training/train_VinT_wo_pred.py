@@ -61,7 +61,7 @@ def train_dnd(
             groundtruth.copy_(ground_truth)
 
             loss = torch.sqrt(action_reduce(F.mse_loss(obsgoal_cond, groundtruth, reduction="none")))
-            total_train_loss = total_train_loss + loss.item() * 128 * 128
+            total_train_loss = total_train_loss + loss.item() * 128
 
             optimizer.zero_grad()
             loss.backward()
