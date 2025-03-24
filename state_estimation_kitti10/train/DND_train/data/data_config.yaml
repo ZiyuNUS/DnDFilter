@@ -1,0 +1,12 @@
+# global params for diffusion model
+# normalized min and max
+#state`_stats:
+#  max: [2.43, 1.64, 4.26] # [min_dx, min_dy]
+#  min: [-1.71, -1.8, -4.8] # [max_dx, max_dy] 128-1`
+state_stats:
+  max: [2.93, 4.26] # [min_dx, min_dy]
+  min: [-2.93, -4.8] # [max_dx, max_dy] 128-1
+
+# data specific params
+RED:
+  metric_waypoint_spacing: 0.12
