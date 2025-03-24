@@ -35,6 +35,7 @@ def train_eval_loop(
         wandb_log_freq: int = 10,
         current_epoch: int = 0,
         use_wandb: bool = True,
+        eval_fraction: float = 0.25,
         eval_freq: int = 1,
 ):
     latest_path = os.path.join(project_folder, f"latest.pth")
@@ -48,16 +49,13 @@ def train_eval_loop(
             print(
                 f"Start ViNT DP Training Epoch {epoch}/{current_epoch + epochs - 1}"
             )
-            torch.cuda.empty_cache()
             train_dnd(
                 model=model,
                 ema_model=ema_model,
                 optimizer=optimizer,
                 dataloader=train_loader,
-                transform=transform,
                 device=device,
                 noise_scheduler=noise_scheduler,
-                epoch=epoch,
                 print_log_freq=print_log_freq,
                 wandb_log_freq=wandb_log_freq,
                 use_wandb=use_wandb,
@@ -92,10 +90,10 @@ def train_eval_loop(
                     eval_type=dataset_type,
                     ema_model=ema_model,
                     dataloader=loader,
-                    transform=transform,
                     device=device,
                     noise_scheduler=noise_scheduler,
                     epoch=epoch,
+                    print_log_freq=print_log_freq,
                     wandb_log_freq=wandb_log_freq,
                     use_wandb=use_wandb,
                 )
@@ -116,6 +114,8 @@ def train_eval_loop(
     print()
 
 
-def load_model(model, checkpoint: dict) -> None:
-    state_dict = checkpoint
-    model.load_state_dict(state_dict, strict=False)
+def load_model(model, model_type, checkpoint: dict) -> None:
+    """Load model from checkpoint."""
+    if model_type == "nomad":
+        state_dict = checkpoint
+        model.load_state_dict(state_dict, strict=False)
