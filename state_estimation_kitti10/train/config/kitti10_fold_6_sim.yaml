@@ -40,6 +40,7 @@ normalize: True
 # context
 context_type: temporal
 context_size: 1 # 5
+prediction_size: 2 # 3+1
 
 # action output params
 len_traj_pred: 4
