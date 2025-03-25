@@ -44,7 +44,7 @@ Run the commands below inside the topmost directory:
 For training, modify the configuration file in `./train/train.py` to match the 
 desired training objective or model, then simply run `train.py` to start the training process.
 
-For validating, run the test scripts found in the `./train/test_*` or `./train/test` files.
+For validating, run the test scripts found in the `./train/test_*.py` or `./train/test.py` files.
 
 To train from a existing checkpoints, Add 
 ```bash
