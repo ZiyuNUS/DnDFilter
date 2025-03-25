@@ -30,7 +30,7 @@ checkpoints.
 Run the commands below inside the topmost directory:
 1. Set up the conda environment:
     ```bash
-    conda env create -f train/train_environment.yml
+    conda env create -f train_environment.yml
     ```
 2. Source the conda environment:
     ```
