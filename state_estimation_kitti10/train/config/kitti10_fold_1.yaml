@@ -17,7 +17,7 @@ warmup: True
 warmup_epochs: 4
 seed: 0
 
-load_run: kitti10_fold1/s1
+#load_run: kitti10_fold1/s1
 
 training_setting: "step_1"
 
