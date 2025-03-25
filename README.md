@@ -36,7 +36,7 @@ Run the commands below inside the topmost directory:
     ```
     conda activate DnD_Filter
     ```
-3. Install the `diffusion_policy` package from this [repo](https://github.com/real-stanford/diffusion_policy):
+3. Install the `diffusion_policy` package from this [repo](https://github.com/real-stanford/diffusion_policy) into the state_estimation_* folders:
     ```bash
     git clone git@github.com:real-stanford/diffusion_policy.git
     pip install -e diffusion_policy/
