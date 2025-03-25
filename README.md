@@ -105,5 +105,3 @@ The processed dataset we used can be found in
   year={2025}
 }
 ```
-
-# More details are coming soon.
