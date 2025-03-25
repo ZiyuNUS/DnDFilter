@@ -334,9 +334,9 @@ def main(config):
 
 if __name__ == "__main__":
     torch.multiprocessing.set_start_method("spawn")
-    config_route = "config/kitti10_fold_1_sim.yaml"
+    config_route = "config/kitti10_fold_11_sim.yaml"
     with open(config_route, "r") as f:
         user_config = yaml.safe_load(f)
     config = user_config
-    config['load_run'] = 'kitti10_fold1/s2simple'
+    config['load_run'] = 'kitti10_fold11/s2simple'
     main(config)
